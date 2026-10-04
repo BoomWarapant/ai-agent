@@ -55,6 +55,7 @@ ok "build $COMPUTER_TH_IMAGE"
 #     and the 3D hard-hat robot avatar (patched from the pinned app image; not redistributed)
 rm -rf app-office && mkdir -p app-office
 cp "$REPO_ROOT/config/app-office/"{Dockerfile,robot-hardhat.tsx.part,hardhat.css.part} hotfix/contracts-attachments.ts hotfix/core-attachments.ts app-office/
+cp -r "$REPO_ROOT/config/app-office/branding" app-office/
 cid="$(docker create "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}")"
 docker cp "$cid:/app/packages/ui-web/src/bot-avatar.tsx" app-office/bot-avatar.tsx.orig
 docker cp "$cid:/app/packages/ui-web/src/styles.css" app-office/styles.css.orig
