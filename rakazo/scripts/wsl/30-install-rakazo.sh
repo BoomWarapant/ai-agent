@@ -46,6 +46,17 @@ python3 "$REPO_ROOT/scripts/wsl/office-attachments-patch.py" hotfix
 sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS-office" || fail "checksum hotfix Office ไม่ตรง — หยุด"
 ok "hotfix แนบไฟล์ Office พร้อม"
 
+# 4c) CRD branding: "Rakazo" -> "crd-bot" in server text the user sees (model billing notes) and in the
+#     bot's self-description, so bots introduce themselves as crd-bot. All occurrences in these 3 files are
+#     user/bot-facing text (checked on v0.1.6); patched from the pinned app image, not redistributed.
+cid="$(docker create "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}")"
+for f in pi-models pi-oauth pi-runtime; do docker cp "$cid:/app/packages/adapters/src/$f.ts" "hotfix/$f.ts.orig"; done
+docker rm "$cid" >/dev/null
+sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS-branding" || fail "ไฟล์ต้นฉบับใน image ไม่ตรง v0.1.6 — หยุด"
+for f in pi-models pi-oauth pi-runtime; do sed -E 's/\bRakazo\b/crd-bot/g' "hotfix/$f.ts.orig" > "hotfix/$f.ts"; done
+! grep -qw Rakazo hotfix/pi-models.ts hotfix/pi-oauth.ts hotfix/pi-runtime.ts || fail "แทนคำ Rakazo ไม่ครบ"
+ok "hotfix ข้อความ crd-bot พร้อม"
+
 # 5) Thai-font bot computer image (pull base first so FROM resolves offline-safe)
 docker pull "ghcr.io/elie222/rakazo/computer:${RAKAZO_TAG}" >/dev/null
 docker build -q -t "$COMPUTER_TH_IMAGE" computer-th
