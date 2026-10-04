@@ -16,7 +16,8 @@
 | D12 | เปิดแอปด้วย Edge `--app` + profile แยก | ไม่มีแถบ URL · ไม่เปิดแท็บเก่าของ Edge หลัก · cookie แยก |
 | D13 | บอทตัวแรก = DR → %progress เทียบ BOQ (**BOQ ตัดราคาออก**) | ข้อมูลอ่อนไหวน้อยกว่า PR · ตรวจผลง่าย · ต่อยอดจาก skill `crd-boq-progress-check` |
 | D14 | ระยะยาว: ย้ายไปเครื่อง 24 ชม. ในออฟฟิศ (Ubuntu Server) | โน้ตบุ๊ก sleep = บอท/งานตั้งเวลาหยุด · ต้องผ่าน IT + บัญชี AI ระดับองค์กร + HTTPS ภายใน |
-| D15 | hotfix ให้บอทแนบไฟล์ .xlsx/.docx/.pptx ในแชต (api/worker) | v0.1.6 และ upstream main (4 ต.ค. 2569) อนุญาตแค่ 9 ชนิด (รูป, pdf, txt, md, csv, json) → `attach_file` ขึ้น `unsupported attachment type` · patch จาก image ตอนติดตั้ง ไม่เก็บซอร์สใน repo · ทดสอบ: atlas แนบ xlsx ได้ มีสูตรจริง · ปุ่มอัปโหลดฝั่งผู้ใช้ในเว็บยังไม่รับ (ต้อง rebuild web) |
+| D15 | hotfix ให้บอทแนบไฟล์ .xlsx/.docx/.pptx ในแชต (api/worker) | v0.1.6 และ upstream main (4 ต.ค. 2569) อนุญาตแค่ 9 ชนิด (รูป, pdf, txt, md, csv, json) → `attach_file` ขึ้น `unsupported attachment type` · patch จาก image ตอนติดตั้ง ไม่เก็บซอร์สใน repo · ทดสอบ: atlas แนบ xlsx ได้ มีสูตรจริง · ฝั่งผู้ใช้อัปโหลดได้ด้วย D16 |
+| D16 | web ใช้ image `crd/app:v0.1.6-office` (build หน้าเว็บใหม่ด้วยไฟล์ hotfix D15) + `pull_policy: never` | หน้าเว็บเป็น build สำเร็จ (`vite preview` จาก `dist`) แก้ด้วย mount ไม่ได้ · build จาก image upstream ในเครื่อง (~41 วิ) แบบเดียวกับ `crd/computer:*-th` · ทดสอบ: อัปโหลด .xlsx ผ่านปุ่มแนบไฟล์ → atlas อ่านสูตรและจับยอดรวมผิดได้ |
 
 ## ตัวเลขที่วัดได้จริง (โน้ตบุ๊ก i5-13450HX / 32 GB, WSL 16 GB)
 - แกน Rakazo: worker 469 MB · api 487 MB · supervisor 130 MB · web 188 MB · postgres 78 MB (≈ 1.35 GB)

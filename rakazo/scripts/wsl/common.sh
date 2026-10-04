@@ -4,6 +4,7 @@
 RAKAZO_TAG="v0.1.6"
 RAKAZO_HOME="/home/rakazo/rakazo"
 COMPUTER_TH_IMAGE="crd/computer:${RAKAZO_TAG}-th"
+WEB_OFFICE_IMAGE="crd/app:${RAKAZO_TAG}-office"
 # Pinned upstream sources
 RAKAZO_RAW="https://raw.githubusercontent.com/elie222/rakazo/${RAKAZO_TAG}/infra/compose"
 BOTTEAM_RAW="https://raw.githubusercontent.com/jaturapornchai/mybotdemo01/b539632eba4ef28c14cf0e2c0b2ec6c8ee122787/rakazo"
