@@ -94,7 +94,7 @@ CRD_SKILLS_DIR=/mnt/c/Users/<ชื่อผู้ใช้>/.claude/skills bash
 
 **ผ่านเมื่อ:** ทุกบรรทัดเป็น `[PASS]` และจบด้วย "Rakazo ทำงาน" — ถ้า checksum `FAILED` ให้หยุด (ไฟล์ต้นทางถูกเปลี่ยน)
 
-> ห้ามใช้ `bash install-images.sh` เพื่อเปิดระบบอีก — installer ไม่โหลด override ให้ใช้ `dc up -d` หรือไอคอน Rakazo
+> ห้ามใช้ `bash install-images.sh` เพื่อเปิดระบบอีก — installer ไม่โหลด override ให้ใช้ `dc up -d` หรือไอคอน crd-bot
 
 ## ขั้น 5 — กันบอทเข้า LAN (หน้าต่าง B: root, R1)
 ```bash
@@ -115,7 +115,7 @@ bash $REPO/scripts/wsl/verify.sh
 powershell -ExecutionPolicy Bypass -File .\ai-agent\rakazo\scripts\windows\create-shortcut.ps1
 # เปิดเองตอน login Windows (เลือกได้): เพิ่ม -Startup
 ```
-สคริปต์จะ: สร้าง/ทับไอคอน Rakazo บน Desktop ให้ชี้ไปที่ `rakazo-start.ps1` ใน repo · อัปเดตไอคอนใน Startup ถ้ามีอยู่แล้ว · ย้ายสคริปต์เก่า `%USERPROFILE%\rakazo-start.ps1` (ถ้ามี) เป็น `.bak`
+สคริปต์จะ: สร้าง/ทับไอคอน **crd-bot** (รูปบอทหมวกนิรภัย `crd-bot.ico` คัดลอกไปไว้ที่ `%LOCALAPPDATA%\crd-bot`) บน Desktop ให้ชี้ไปที่ `rakazo-start.ps1` ใน repo · แทนที่ไอคอนเก่า `Rakazo.lnk` ถ้ามี · อัปเดตไอคอนใน Startup ถ้ามีอยู่แล้ว · ย้ายสคริปต์เก่า `%USERPROFILE%\rakazo-start.ps1` (ถ้ามี) เป็น `.bak`
 
 **ผ่านเมื่อ:** ขึ้น `[PASS] ... -> ...\rakazo\scripts\windows\rakazo-start.ps1` และดับเบิลคลิก "Rakazo" → ภายใน 10–60 วินาที เปิดหน้าต่าง Rakazo ไม่มีแถบ URL และไม่มีแท็บอื่นติดมา
 > ถ้าย้ายโฟลเดอร์ repo ไปที่อื่น ให้รันสคริปต์นี้ซ้ำ ไอคอนจะชี้ไปที่ใหม่

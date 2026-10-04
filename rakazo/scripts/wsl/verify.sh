@@ -19,6 +19,7 @@ chk "image tag = ${RAKAZO_TAG}"                "docker inspect -f '{{.Config.Ima
 chk "hotfix ถูกโหลดใน worker"                  '[ "$(docker exec rakazo-worker-1 grep -c dispatcherFetch /app/packages/adapters/src/web-ssrf.ts)" -ge 2 ]'
 chk "hotfix แนบไฟล์ Office ถูกโหลดใน worker"   '[ "$(docker exec rakazo-worker-1 grep -c spreadsheetml /app/packages/contracts/src/attachments.ts)" -ge 1 ]'
 chk "web ใช้ image ที่รับอัปโหลด Office"       "[ \"\$(docker inspect -f '{{.Config.Image}}' rakazo-web-1)\" = '${WEB_OFFICE_IMAGE}' ] && docker exec rakazo-web-1 grep -rlq spreadsheetml /app/apps/web/dist/assets"
+chk "web มีอวตารหมวกนิรภัย 3 มิติ"              'docker exec rakazo-web-1 grep -rlq rakazo-hh /app/apps/web/dist/assets'
 chk "supervisor ใช้ image เครื่องบอท CRD"       "[ \"\$(docker exec rakazo-supervisor-1 printenv RAKAZO_COMPUTER_IMAGE)\" = '${COMPUTER_CRD_IMAGE}' ]"
 chk "image เครื่องบอทมี Python libs + skill"     "docker run --rm --entrypoint sh '${COMPUTER_CRD_IMAGE}' -c 'python3 -c \"import openpyxl, docx, pythainlp\" && test -f /opt/crd-skills/skill-installer/SKILL.md'"
 chk "builtin skill ถูกโหลดใน worker"           '[ "$(docker exec rakazo-worker-1 grep -c "\"name\": \"skill-installer\"" /app/packages/adapters/src/builtin-skills.ts)" -ge 1 ]'
