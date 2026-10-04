@@ -90,11 +90,11 @@ CRD_SKILLS_DIR=/mnt/c/Users/<ชื่อผู้ใช้>/.claude/skills bash
 ```
 ไม่ตั้ง `CRD_SKILLS_DIR` ก็ติดตั้งได้ (มีแค่ `skill-installer`) แล้วเพิ่ม skill ภายหลังด้วย `build-skills.sh --apply` (ดู OPERATIONS.md)
 
-สคริปต์ทำ: ตรวจ port → ดาวน์โหลด installer/compose ที่ pin ไว้ที่ v0.1.6 (`--prepare-only`) → pin image tag → ดึง hotfix + Dockerfile พร้อม **ตรวจ checksum** → สร้าง hotfix แนบไฟล์ Office จาก image `app:v0.1.6` (ตรวจ checksum ก่อน/หลัง patch) → build `crd/computer:v0.1.6-th` → build `crd/app:v0.1.6-office` (หน้าเว็บที่รับอัปโหลด Office, ~1 นาที) → `build-skills.sh`: build `crd/computer:v0.1.6-crd` (Python libs + skill ที่ `/opt/crd-skills`) และสร้าง built-in skills → ใส่ override → เพิ่มคำสั่ง `dc` → `dc up -d --wait`
+สคริปต์ทำ: ตรวจ port → ดาวน์โหลด installer/compose ที่ pin ไว้ที่ v0.1.6 (`--prepare-only`) → pin image tag → ดึง hotfix + Dockerfile พร้อม **ตรวจ checksum** → สร้าง hotfix แนบไฟล์ Office จาก image `app:v0.1.6` (ตรวจ checksum ก่อน/หลัง patch) → build `crd/computer:v0.1.6-th` → build `crd/app:v0.1.6-office` (หน้าเว็บที่รับอัปโหลด Office + อวตารหมวกนิรภัย 3 มิติ + ชื่อ/ไอคอน crd-bot, ~1 นาที) → `build-skills.sh`: build `crd/computer:v0.1.6-crd` (Python libs + skill ที่ `/opt/crd-skills`) และสร้าง built-in skills → ใส่ override → เพิ่มคำสั่ง `dc` → `dc up -d --wait`
 
 **ผ่านเมื่อ:** ทุกบรรทัดเป็น `[PASS]` และจบด้วย "Rakazo ทำงาน" — ถ้า checksum `FAILED` ให้หยุด (ไฟล์ต้นทางถูกเปลี่ยน)
 
-> ห้ามใช้ `bash install-images.sh` เพื่อเปิดระบบอีก — installer ไม่โหลด override ให้ใช้ `dc up -d` หรือไอคอน Rakazo
+> ห้ามใช้ `bash install-images.sh` เพื่อเปิดระบบอีก — installer ไม่โหลด override ให้ใช้ `dc up -d` หรือไอคอน crd-bot
 
 ## ขั้น 5 — กันบอทเข้า LAN (หน้าต่าง B: root, R1)
 ```bash
@@ -115,7 +115,7 @@ bash $REPO/scripts/wsl/verify.sh
 powershell -ExecutionPolicy Bypass -File .\ai-agent\rakazo\scripts\windows\create-shortcut.ps1
 # เปิดเองตอน login Windows (เลือกได้): เพิ่ม -Startup
 ```
-สคริปต์จะ: สร้าง/ทับไอคอน Rakazo บน Desktop ให้ชี้ไปที่ `rakazo-start.ps1` ใน repo · อัปเดตไอคอนใน Startup ถ้ามีอยู่แล้ว · ย้ายสคริปต์เก่า `%USERPROFILE%\rakazo-start.ps1` (ถ้ามี) เป็น `.bak`
+สคริปต์จะ: สร้าง/ทับไอคอน **crd-bot** (รูปบอทหมวกนิรภัย `crd-bot.ico` คัดลอกไปไว้ที่ `%LOCALAPPDATA%\crd-bot`) บน Desktop ให้ชี้ไปที่ `rakazo-start.ps1` ใน repo · แทนที่ไอคอนเก่า `Rakazo.lnk` ถ้ามี · อัปเดตไอคอนใน Startup ถ้ามีอยู่แล้ว · ย้ายสคริปต์เก่า `%USERPROFILE%\rakazo-start.ps1` (ถ้ามี) เป็น `.bak`
 
 **ผ่านเมื่อ:** ขึ้น `[PASS] ... -> ...\rakazo\scripts\windows\rakazo-start.ps1` และดับเบิลคลิก "Rakazo" → ภายใน 10–60 วินาที เปิดหน้าต่าง Rakazo ไม่มีแถบ URL และไม่มีแท็บอื่นติดมา
 > ถ้าย้ายโฟลเดอร์ repo ไปที่อื่น ให้รันสคริปต์นี้ซ้ำ ไอคอนจะชี้ไปที่ใหม่

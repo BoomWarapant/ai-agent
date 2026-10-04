@@ -23,7 +23,7 @@
 | 4 | Rakazo v0.1.6 + ฟอนต์ไทย + hotfix + skill CRD | WSL rakazo · `CRD_SKILLS_DIR=… scripts/wsl/30-install-rakazo.sh` |
 | 5 | กันบอทเข้า LAN | WSL root · `scripts/wsl/40-lan-block.sh` |
 | 6 | ตรวจรวม | WSL rakazo · `scripts/wsl/verify.sh` |
-| 7 | ไอคอนแอปบน Desktop | `scripts/windows/create-shortcut.ps1` |
+| 7 | ไอคอนแอป crd-bot บน Desktop | `scripts/windows/create-shortcut.ps1` |
 | 8 | บัญชี + โมเดล + บอท + ทดสอบ | หน้าเว็บ · `docs/BOT-SETUP.md` |
 
 ## โครงสร้าง

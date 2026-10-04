@@ -52,8 +52,16 @@ docker build -q -t "$COMPUTER_TH_IMAGE" computer-th
 ok "build $COMPUTER_TH_IMAGE"
 
 # 5b) Web rebuilt with the Office-attachment hotfix (users can upload .xlsx/.docx/.pptx)
-mkdir -p app-office
-cp "$REPO_ROOT/config/app-office/Dockerfile" hotfix/contracts-attachments.ts hotfix/core-attachments.ts app-office/
+#     and the 3D hard-hat robot avatar (patched from the pinned app image; not redistributed)
+rm -rf app-office && mkdir -p app-office
+cp "$REPO_ROOT/config/app-office/"{Dockerfile,robot-hardhat.tsx.part,hardhat.css.part} hotfix/contracts-attachments.ts hotfix/core-attachments.ts app-office/
+cp -r "$REPO_ROOT/config/app-office/branding" app-office/
+cid="$(docker create "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}")"
+docker cp "$cid:/app/packages/ui-web/src/bot-avatar.tsx" app-office/bot-avatar.tsx.orig
+docker cp "$cid:/app/packages/ui-web/src/styles.css" app-office/styles.css.orig
+docker rm "$cid" >/dev/null
+(cd app-office && sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS-avatar") || fail "bot-avatar.tsx/styles.css ใน image ไม่ตรง v0.1.6 — หยุด"
+python3 "$REPO_ROOT/scripts/wsl/avatar-patch.py" app-office
 docker build -q -t "$WEB_OFFICE_IMAGE" app-office
 ok "build $WEB_OFFICE_IMAGE"
 
