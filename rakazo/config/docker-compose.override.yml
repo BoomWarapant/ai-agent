@@ -1,0 +1,19 @@
+# CRD Rakazo override — for Rakazo v0.1.6 ONLY.
+# Hotfix web_fetch / remote MCP (upstream #808/#875/#876), fetched at install time from
+# jaturapornchai/mybotdemo01@b539632 (modified Rakazo files, Apache-2.0) — see NOTICE.md.
+# Gemma-specific hotfixes (computer-tools, pi-openai-compatible-provider) are intentionally NOT used.
+# Remove the hotfix mounts after upgrading to a Rakazo release that contains those fixes.
+x-hotfix: &hotfix
+  - ./hotfix/web-ssrf.ts:/app/packages/adapters/src/web-ssrf.ts:ro
+  - ./hotfix/keyless-http-web.ts:/app/packages/adapters/src/keyless-http-web.ts:ro
+  - ./hotfix/undici-fetch.ts:/app/packages/adapters/src/undici-fetch.ts:ro
+  - ./hotfix/remote-mcp.ts:/app/packages/adapters/src/remote-mcp.ts:ro
+services:
+  worker:
+    volumes: *hotfix
+  api:
+    volumes: *hotfix
+  supervisor:
+    environment:
+      # Bot computer image = upstream computer:v0.1.6 + Thai fonts (built by 30-install-rakazo.sh)
+      RAKAZO_COMPUTER_IMAGE: crd/computer:v0.1.6-th

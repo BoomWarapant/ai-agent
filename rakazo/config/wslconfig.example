@@ -1,0 +1,7 @@
+# ตัวอย่างค่า .wslconfig (C:\Users\<user>\.wslconfig)
+# อย่าเขียนทับไฟล์เดิม — "เพิ่ม" เฉพาะบรรทัดที่ยังไม่มี ใต้ section [wsl2]
+# ถ้าใน WSL มีบริการอื่นที่ต้องเปิดค้าง (เช่น oracle fleet) ให้คง vmIdleTimeout=-1 ไว้
+[wsl2]
+memory=16GB
+processors=8
+swap=8GB

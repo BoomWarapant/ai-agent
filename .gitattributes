@@ -1,0 +1,8 @@
+# Keep Linux files LF even when cloned on Windows (CRLF breaks bash and checksums)
+*.sh        text eol=lf
+*.yml       text eol=lf
+*.example   text eol=lf
+**/checksums/* text eol=lf
+*.md        text eol=lf
+# PowerShell files: CRLF
+*.ps1       text eol=crlf

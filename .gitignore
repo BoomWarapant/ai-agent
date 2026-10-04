@@ -1,0 +1,10 @@
+# Secrets and machine-local data: NEVER commit
+.env
+*.env
+!.env.example
+*.dump
+*.tgz
+backups/
+hotfix/
+*.key
+*-api-key*.txt
