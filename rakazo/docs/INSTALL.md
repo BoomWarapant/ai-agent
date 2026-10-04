@@ -87,7 +87,7 @@ bash $REPO/scripts/wsl/20-create-user.sh
 ```bash
 bash $REPO/scripts/wsl/30-install-rakazo.sh
 ```
-สคริปต์ทำ: ตรวจ port → ดาวน์โหลด installer/compose ที่ pin ไว้ที่ v0.1.6 (`--prepare-only`) → pin image tag → ดึง hotfix + Dockerfile พร้อม **ตรวจ checksum** → build `crd/computer:v0.1.6-th` → ใส่ override → เพิ่มคำสั่ง `dc` → `dc up -d --wait`
+สคริปต์ทำ: ตรวจ port → ดาวน์โหลด installer/compose ที่ pin ไว้ที่ v0.1.6 (`--prepare-only`) → pin image tag → ดึง hotfix + Dockerfile พร้อม **ตรวจ checksum** → สร้าง hotfix แนบไฟล์ Office จาก image `app:v0.1.6` (ตรวจ checksum ก่อน/หลัง patch) → build `crd/computer:v0.1.6-th` → ใส่ override → เพิ่มคำสั่ง `dc` → `dc up -d --wait`
 
 **ผ่านเมื่อ:** ทุกบรรทัดเป็น `[PASS]` และจบด้วย "Rakazo ทำงาน" — ถ้า checksum `FAILED` ให้หยุด (ไฟล์ต้นทางถูกเปลี่ยน)
 

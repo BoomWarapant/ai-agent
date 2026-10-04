@@ -17,6 +17,7 @@ chk "Web 127.0.0.1:5173 ตอบ"                   'curl -fs -o /dev/null http
 chk "web/api ผูก 127.0.0.1 เท่านั้น"            '! ss -ltn | grep -E "0\.0\.0\.0:(5173|3100) |\[::\]:(5173|3100) "'
 chk "image tag = ${RAKAZO_TAG}"                "docker inspect -f '{{.Config.Image}}' rakazo-api-1 | grep -q ':${RAKAZO_TAG}$'"
 chk "hotfix ถูกโหลดใน worker"                  '[ "$(docker exec rakazo-worker-1 grep -c dispatcherFetch /app/packages/adapters/src/web-ssrf.ts)" -ge 2 ]'
+chk "hotfix แนบไฟล์ Office ถูกโหลดใน worker"   '[ "$(docker exec rakazo-worker-1 grep -c spreadsheetml /app/packages/contracts/src/attachments.ts)" -ge 1 ]'
 chk "supervisor ใช้ image ฟอนต์ไทย"            "[ \"\$(docker exec rakazo-supervisor-1 printenv RAKAZO_COMPUTER_IMAGE)\" = '${COMPUTER_TH_IMAGE}' ]"
 chk "rakazo-lan-block active"                  '[ "$(systemctl is-active rakazo-lan-block)" = active ]'
 if systemctl cat maw-serve >/dev/null 2>&1; then
