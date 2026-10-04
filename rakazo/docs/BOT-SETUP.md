@@ -95,6 +95,25 @@ Settings → Models → เชื่อม provider (วาง credential ใน
 - ก่อนเพิ่มกติกา "จบรอบเพื่อรอผล" neo ส่งงานแล้วค้นซ้ำเอง ตอบงบ 59,835.70 บาท แล้วเมื่อผล swift มาถึงก็ส่ง "อัปเดต" 69,320 บาท → ผู้ใช้ได้ 2 ชุดขัดกัน (แต่ neo จับได้ว่าข้อมูลของ swift เก่า)
 - หลังแก้: neo ตอบ "ส่งให้ swift แล้ว รอผล" ใน ~14 วิ แล้วได้คำตอบเดียวใน ~1 นาที (กรณีไม่พบราคาที่ตรวจสอบได้ ก็บอกตรงๆ ไม่เดา)
 
+## 3.3 neo ใช้คลังความรู้ (Memory Hub) — เฉพาะเครื่อง pilot
+neo ค้น/บันทึกคลังความรู้ส่วนตัวของเจ้าของเครื่องผ่าน MCP (ตั้ง 4 ต.ค. 2569) · **ไม่อยู่ในชุดติดตั้ง** เพราะ Memory Hub อยู่นอก repo นี้
+- crd-bot อยู่ใน Docker: MCP แบบ HTTP ยอมแค่ HTTPS หรือ `localhost` ของ container เอง → ใช้ **STDIO bridge** (`/opt/memhub-bridge/bridge.mjs`, mount อ่านอย่างเดียวใน api/worker + `MCP_STDIO_ENABLED=true`, `MCP_STDIO_ALLOWED_COMMANDS=<path ของ bridge เท่านั้น>`) ส่งต่อไป Memory Hub ที่ฟังเฉพาะ docker gateway และต้องมี token
+- ขอบเขต: ค้นได้เฉพาะโน้ตที่คัดแล้ว (ไม่เห็นแชตดิบ) · `memory_save` ลงกล่องรอตรวจ ยังค้นไม่เจอจนเจ้าของย้ายเข้าคลัง
+- ลงทะเบียน: Integrations → Advanced → Manage MCP servers → STDIO → Agents เลือก **neo ตัวเดียว** (swift ไม่ใช้)
+- ต่อท้าย Instructions ของ neo:
+
+```text
+## Memory Hub
+- ก่อนส่งงาน ค้น memory_search (limit ≤8)
+- จบงานมีบทเรียนใหม่ memory_save 1 ข้อ (ห้ามความลับ/ตัวเลขสด)
+```
+
+**ข้อควรรู้:**
+- Instructions ของบอทยาวได้ไม่เกิน **4,000 ตัวอักษร** (`BOT_DESCRIPTION_MAX_LENGTH`) ส่วนเกินถูกตัดทิ้งตอนบันทึกโดยไม่เตือน — นับความยาวก่อนวางทุกครั้ง
+- FOLDER_ID ของ Drive ทุกโครงการเก็บใน skill `crd-project-drives` แล้ว ใน Instructions ใช้บรรทัดเดียวชี้ไปที่ skill แทนการใส่ ID ทีละโครงการ เพื่อประหยัดพื้นที่
+- MCP ผูกกับ**บอท** ไม่ใช่ช่องทางแชต: ถ้าผูก Telegram/ช่องทางอื่นให้ neo ภายหลัง ทุกคนที่คุยกับ neo ทางนั้นจะค้นคลังได้ด้วย — ตัดสินใจก่อนผูก (pilot ยังไม่ผูก Telegram)
+- ผลทดสอบ: neo เรียก memory_search → memory_get → memory_save ครบ ตอบปลายทางสำรองข้อมูลถูก (~42 วิ) · รอบแรกส่ง `limit` เกิน 8 แล้วแก้เอง จึงใส่ "(limit ≤8)" ไว้ใน Instructions
+
 ## 4. ชุดทดสอบ (เริ่มแชตใหม่ทุกข้อ)
 
 | # | ข้อความ | ผ่านเมื่อ |
