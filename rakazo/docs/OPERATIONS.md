@@ -42,9 +42,18 @@ bash $REPO/scripts/wsl/verify.sh
 3. กู้คืนตามหัวข้อด้านบน → login ด้วยบัญชีเดิม → ทดสอบตาม BOT-SETUP.md ข้อ 4
 - ถ้าเครื่องเดิมมีแค่บอททดสอบ: ติดตั้งใหม่แบบสะอาดง่ายกว่า (ข้ามขั้น 1 และ 3)
 
+## Skill (หน้าต่าง A)
+- skill ของ CRD ติดมากับระบบเป็น **built-in** (ทุกบัญชีเห็นทันที อ่านอย่างเดียว) ไฟล์ประกอบอยู่ในเครื่องบอทที่ `/opt/crd-skills/<ชื่อ>/`
+- รายชื่อ skill ที่ติดตั้ง = `CRD_SKILLS` ใน `scripts/wsl/common.sh` (`crd-advance-clearing` ไม่รวม — มีข้อมูลพนักงาน/ผู้ขาย ดู DECISIONS D18)
+- **อัปเดต/เพิ่ม skill** (แก้ skill ใน `~/.claude/skills` ของเครื่อง Windows แล้ว): บอทจะหยุดงานที่ค้างอยู่ ~1 นาที
+  ```bash
+  CRD_SKILLS_DIR=/mnt/c/Users/<ชื่อผู้ใช้>/.claude/skills bash $REPO/scripts/wsl/build-skills.sh --apply
+  ```
+- skill เฉพาะ workspace (ไม่ถาวรทั้งระบบ): สั่งบอท "ติดตั้ง skill จาก <ลิงก์ GitHub public>" → ใช้ skill `skill-installer` (เก็บที่ `~/shared/skills/` + ลงทะเบียนเป็น skill ของผู้ใช้)
+
 ## อัปเกรด Rakazo (ถามก่อนทุกครั้ง)
 1. `backup.sh`
-2. อ่าน release notes: แก้ #808 / #875 / #876 แล้วหรือยัง → ถ้าแก้แล้ว ถอด hotfix ออกจาก override · รองรับแนบไฟล์ .xlsx/.docx/.pptx แล้วหรือยัง (ดู `packages/contracts/src/attachments.ts`) → ถ้ารองรับ ถอด mount `contracts-attachments.ts`/`core-attachments.ts`, บล็อก `web:` (image `crd/app:*-office`) ใน override และขั้น 4b/5b ใน `30-install-rakazo.sh`
+2. อ่าน release notes: แก้ #808 / #875 / #876 แล้วหรือยัง → ถ้าแก้แล้ว ถอด hotfix ออกจาก override · รองรับแนบไฟล์ .xlsx/.docx/.pptx แล้วหรือยัง (ดู `packages/contracts/src/attachments.ts`) → ถ้ารองรับ ถอด mount `contracts-attachments.ts`/`core-attachments.ts`, บล็อก `web:` (image `crd/app:*-office`) ใน override และขั้น 4b/5b ใน `30-install-rakazo.sh` · ตรวจ `builtin-skills.ts` ของเวอร์ชันใหม่ แล้วอัปเดต `checksums/SHA256SUMS-skills` + `FROM`/tag ใน `config/computer-crd/Dockerfile`
 3. แก้ `RAKAZO_TAG` ใน `scripts/wsl/common.sh`, build `crd/computer:<tag>-th` ใหม่ (แก้ `FROM` ใน `computer-th/Dockerfile`)
 4. hotfix ผูกกับ v0.1.6 — **ห้ามใช้ hotfix เดิมกับเวอร์ชันใหม่โดยไม่ตรวจ**
 5. ทดสอบด้วย `verify.sh` + ชุดทดสอบ

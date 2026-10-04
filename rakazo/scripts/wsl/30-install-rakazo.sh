@@ -57,6 +57,10 @@ cp "$REPO_ROOT/config/app-office/Dockerfile" hotfix/contracts-attachments.ts hot
 docker build -q -t "$WEB_OFFICE_IMAGE" app-office
 ok "build $WEB_OFFICE_IMAGE"
 
+# 5c) Skills: bot computer image with Python libs + skill folders, and built-in skills hotfix.
+#     Set CRD_SKILLS_DIR (e.g. /mnt/c/Users/<you>/.claude/skills) to include the CRD skills.
+bash "$REPO_ROOT/scripts/wsl/build-skills.sh"
+
 # 6) Override from this repo
 cp "$REPO_ROOT/config/docker-compose.override.yml" docker-compose.override.yml
 

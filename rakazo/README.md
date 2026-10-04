@@ -20,7 +20,7 @@
 | 1 | ตรวจเครื่อง + merge `.wslconfig` | `scripts/windows/check-machine.ps1`, `merge-wslconfig.ps1` |
 | 2 | Docker Engine | WSL root · `scripts/wsl/10-install-docker.sh` |
 | 3 | user `rakazo` | WSL root · `scripts/wsl/20-create-user.sh` |
-| 4 | Rakazo v0.1.6 + ฟอนต์ไทย + hotfix | WSL rakazo · `scripts/wsl/30-install-rakazo.sh` |
+| 4 | Rakazo v0.1.6 + ฟอนต์ไทย + hotfix + skill CRD | WSL rakazo · `CRD_SKILLS_DIR=… scripts/wsl/30-install-rakazo.sh` |
 | 5 | กันบอทเข้า LAN | WSL root · `scripts/wsl/40-lan-block.sh` |
 | 6 | ตรวจรวม | WSL rakazo · `scripts/wsl/verify.sh` |
 | 7 | ไอคอนแอปบน Desktop | `scripts/windows/create-shortcut.ps1` |
@@ -28,8 +28,9 @@
 
 ## โครงสร้าง
 ```
-config/     docker-compose.override.yml, wslconfig.example
+config/     docker-compose.override.yml, wslconfig.example, Dockerfile ของ image ที่ build ในเครื่อง
 scripts/    wsl/ (bash, LF)  windows/ (PowerShell)
+skills/     skill-installer (skill ของ CRD ไม่อยู่ใน repo — ดึงจาก CRD_SKILLS_DIR ตอนติดตั้ง)
 checksums/  sha256 ของไฟล์ที่ดึงจากภายนอกตอนติดตั้ง
 docs/       INSTALL, BOT-SETUP, OPERATIONS, DECISIONS
 ```

@@ -13,4 +13,8 @@
   (modified Rakazo files, Apache-2.0; originals and results verified with `checksums/SHA256SUMS-office`); not redistributed.
   The local image `crd/app:v0.1.6-office` (web rebuilt with these files, `config/app-office/Dockerfile`) is built
   on the machine at install time and is not published.
+- **CRD built-in skills hotfix** — `rakazo/hotfix/builtin-skills.ts` is **generated at install time** from the
+  `app:v0.1.6` image (original verified with `checksums/SHA256SUMS-skills`) by `scripts/wsl/builtin-skills-patch.py`
+  (modified Rakazo file, Apache-2.0); not redistributed. CRD skill content is read from `CRD_SKILLS_DIR` on the
+  machine and baked into the local image `crd/computer:v0.1.6-crd`; it is not stored in this repo.
 - Docker install steps follow the official Docker documentation for Ubuntu.
