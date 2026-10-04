@@ -84,10 +84,13 @@ bash $REPO/scripts/wsl/20-create-user.sh
 **ผ่านเมื่อ:** `[PASS] rakazo อยู่ใน group docker`
 
 ## ขั้น 4 — ติดตั้ง Rakazo + ฟอนต์ไทย + hotfix (หน้าต่าง A: rakazo, R1)
+ก่อนรัน ให้มีโฟลเดอร์ skill ของ CRD บนเครื่องนี้ (ปกติคือ `C:\Users\<ชื่อผู้ใช้>\.claude\skills` ที่มี `crd-*/SKILL.md`) — skill **ไม่ได้เก็บใน repo นี้**
 ```bash
-bash $REPO/scripts/wsl/30-install-rakazo.sh
+CRD_SKILLS_DIR=/mnt/c/Users/<ชื่อผู้ใช้>/.claude/skills bash $REPO/scripts/wsl/30-install-rakazo.sh
 ```
-สคริปต์ทำ: ตรวจ port → ดาวน์โหลด installer/compose ที่ pin ไว้ที่ v0.1.6 (`--prepare-only`) → pin image tag → ดึง hotfix + Dockerfile พร้อม **ตรวจ checksum** → สร้าง hotfix แนบไฟล์ Office จาก image `app:v0.1.6` (ตรวจ checksum ก่อน/หลัง patch) → build `crd/computer:v0.1.6-th` → ใส่ override → เพิ่มคำสั่ง `dc` → `dc up -d --wait`
+ไม่ตั้ง `CRD_SKILLS_DIR` ก็ติดตั้งได้ (มีแค่ `skill-installer`) แล้วเพิ่ม skill ภายหลังด้วย `build-skills.sh --apply` (ดู OPERATIONS.md)
+
+สคริปต์ทำ: ตรวจ port → ดาวน์โหลด installer/compose ที่ pin ไว้ที่ v0.1.6 (`--prepare-only`) → pin image tag → ดึง hotfix + Dockerfile พร้อม **ตรวจ checksum** → สร้าง hotfix แนบไฟล์ Office จาก image `app:v0.1.6` (ตรวจ checksum ก่อน/หลัง patch) → build `crd/computer:v0.1.6-th` → build `crd/app:v0.1.6-office` (หน้าเว็บที่รับอัปโหลด Office, ~1 นาที) → `build-skills.sh`: build `crd/computer:v0.1.6-crd` (Python libs + skill ที่ `/opt/crd-skills`) และสร้าง built-in skills → ใส่ override → เพิ่มคำสั่ง `dc` → `dc up -d --wait`
 
 **ผ่านเมื่อ:** ทุกบรรทัดเป็น `[PASS]` และจบด้วย "Rakazo ทำงาน" — ถ้า checksum `FAILED` ให้หยุด (ไฟล์ต้นทางถูกเปลี่ยน)
 

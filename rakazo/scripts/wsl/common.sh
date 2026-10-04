@@ -4,6 +4,11 @@
 RAKAZO_TAG="v0.1.6"
 RAKAZO_HOME="/home/rakazo/rakazo"
 COMPUTER_TH_IMAGE="crd/computer:${RAKAZO_TAG}-th"
+WEB_OFFICE_IMAGE="crd/app:${RAKAZO_TAG}-office"
+COMPUTER_CRD_IMAGE="crd/computer:${RAKAZO_TAG}-crd"
+# CRD skills baked into bot computers by build-skills.sh (read from CRD_SKILLS_DIR; not stored in this repo).
+# crd-advance-clearing is left out on purpose: it carries employee/vendor data (see docs/DECISIONS.md D18).
+CRD_SKILLS="crd-bom-boq crd-daily-progress-report crd-draft-letter crd-estimation crd-plan-building-construction crd-s-curve-report-rev02"
 # Pinned upstream sources
 RAKAZO_RAW="https://raw.githubusercontent.com/elie222/rakazo/${RAKAZO_TAG}/infra/compose"
 BOTTEAM_RAW="https://raw.githubusercontent.com/jaturapornchai/mybotdemo01/b539632eba4ef28c14cf0e2c0b2ec6c8ee122787/rakazo"
