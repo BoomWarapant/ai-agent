@@ -8,4 +8,7 @@
   - `rakazo/hotfix/{web-ssrf,keyless-http-web,undici-fetch,remote-mcp}.ts` — modified Rakazo v0.1.6 files (Apache-2.0)
   - `rakazo/computer-th/Dockerfile` — Thai fonts for bot computers
   - `rakazo/wsl-system/rakazo-lan-block.{sh,service}` — LAN egress block for containers
+- **CRD Office-attachment hotfix** — `rakazo/hotfix/{contracts,core}-attachments.ts` are **generated at install time**
+  from the `ghcr.io/elie222/rakazo/app:v0.1.6` image by `scripts/wsl/office-attachments-patch.py`
+  (modified Rakazo files, Apache-2.0; originals and results verified with `checksums/SHA256SUMS-office`); not redistributed.
 - Docker install steps follow the official Docker documentation for Ubuntu.

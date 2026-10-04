@@ -8,6 +8,10 @@ x-hotfix: &hotfix
   - ./hotfix/keyless-http-web.ts:/app/packages/adapters/src/keyless-http-web.ts:ro
   - ./hotfix/undici-fetch.ts:/app/packages/adapters/src/undici-fetch.ts:ro
   - ./hotfix/remote-mcp.ts:/app/packages/adapters/src/remote-mcp.ts:ro
+  # CRD: allow Office attachments (.xlsx/.docx/.pptx) — api/worker only; web upload button still needs a rebuild.
+  # Generated at install time from the v0.1.6 app image (30-install-rakazo.sh step 4b). Remove when upstream supports them.
+  - ./hotfix/contracts-attachments.ts:/app/packages/contracts/src/attachments.ts:ro
+  - ./hotfix/core-attachments.ts:/app/packages/core/src/attachments.ts:ro
 services:
   worker:
     volumes: *hotfix

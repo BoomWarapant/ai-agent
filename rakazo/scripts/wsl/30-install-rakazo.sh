@@ -35,6 +35,17 @@ curl -fsSL "${BOTTEAM_RAW}/computer-th/Dockerfile" -o computer-th/Dockerfile
 sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS" || fail "checksum ไม่ตรง — หยุด อย่าใช้ไฟล์เหล่านี้"
 ok "checksum ครบ 5 ไฟล์"
 
+# 4b) CRD hotfix: Office attachments (.xlsx/.docx/.pptx) — patched from the pinned app image (not redistributed)
+docker pull -q "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}" >/dev/null
+cid="$(docker create "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}")"
+docker cp "$cid:/app/packages/contracts/src/attachments.ts" hotfix/contracts-attachments.ts.orig
+docker cp "$cid:/app/packages/core/src/attachments.ts" hotfix/core-attachments.ts.orig
+docker rm "$cid" >/dev/null
+grep '\.orig$' "$REPO_ROOT/checksums/SHA256SUMS-office" | sha256sum -c - || fail "ไฟล์ต้นฉบับใน image ไม่ตรง v0.1.6 — หยุด"
+python3 "$REPO_ROOT/scripts/wsl/office-attachments-patch.py" hotfix
+sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS-office" || fail "checksum hotfix Office ไม่ตรง — หยุด"
+ok "hotfix แนบไฟล์ Office พร้อม"
+
 # 5) Thai-font bot computer image (pull base first so FROM resolves offline-safe)
 docker pull "ghcr.io/elie222/rakazo/computer:${RAKAZO_TAG}" >/dev/null
 docker build -q -t "$COMPUTER_TH_IMAGE" computer-th

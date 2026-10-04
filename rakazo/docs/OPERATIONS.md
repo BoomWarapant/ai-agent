@@ -44,7 +44,7 @@ bash $REPO/scripts/wsl/verify.sh
 
 ## อัปเกรด Rakazo (ถามก่อนทุกครั้ง)
 1. `backup.sh`
-2. อ่าน release notes: แก้ #808 / #875 / #876 แล้วหรือยัง → ถ้าแก้แล้ว ถอด hotfix ออกจาก override
+2. อ่าน release notes: แก้ #808 / #875 / #876 แล้วหรือยัง → ถ้าแก้แล้ว ถอด hotfix ออกจาก override · รองรับแนบไฟล์ .xlsx/.docx/.pptx แล้วหรือยัง (ดู `packages/contracts/src/attachments.ts`) → ถ้ารองรับ ถอด mount `contracts-attachments.ts`/`core-attachments.ts` และขั้น 4b ใน `30-install-rakazo.sh`
 3. แก้ `RAKAZO_TAG` ใน `scripts/wsl/common.sh`, build `crd/computer:<tag>-th` ใหม่ (แก้ `FROM` ใน `computer-th/Dockerfile`)
 4. hotfix ผูกกับ v0.1.6 — **ห้ามใช้ hotfix เดิมกับเวอร์ชันใหม่โดยไม่ตรวจ**
 5. ทดสอบด้วย `verify.sh` + ชุดทดสอบ
