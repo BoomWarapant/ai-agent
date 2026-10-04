@@ -21,8 +21,10 @@ chk "hotfix แนบไฟล์ Office ถูกโหลดใน worker"   '
 chk "web ใช้ image ที่รับอัปโหลด Office"       "[ \"\$(docker inspect -f '{{.Config.Image}}' rakazo-web-1)\" = '${WEB_OFFICE_IMAGE}' ] && docker exec rakazo-web-1 grep -rlq spreadsheetml /app/apps/web/dist/assets"
 chk "web มีอวตารหมวกนิรภัย 3 มิติ"              'docker exec rakazo-web-1 grep -rlq rakazo-hh /app/apps/web/dist/assets'
 chk "ชื่อหน้าต่างแอป = crd-bot"                  'curl -fs http://127.0.0.1:5173 | grep -q "<title>crd-bot</title>"'
+chk "ข้อความในหน้าเว็บเป็น crd-bot"              'docker exec rakazo-web-1 grep -rq "Sign in to crd-bot" /app/apps/web/dist/assets && ! docker exec rakazo-web-1 grep -rq "Sign in to Rakazo" /app/apps/web/dist/assets'
 chk "supervisor ใช้ image เครื่องบอท CRD"       "[ \"\$(docker exec rakazo-supervisor-1 printenv RAKAZO_COMPUTER_IMAGE)\" = '${COMPUTER_CRD_IMAGE}' ]"
 chk "image เครื่องบอทมี Python libs + skill"     "docker run --rm --entrypoint sh '${COMPUTER_CRD_IMAGE}' -c 'python3 -c \"import openpyxl, docx, pythainlp\" && test -f /opt/crd-skills/skill-installer/SKILL.md'"
+chk "บอทแนะนำตัวเป็น crd-bot (worker)"          'docker exec rakazo-worker-1 grep -q "You are a crd-bot bot" /app/packages/adapters/src/pi-runtime.ts'
 chk "builtin skill ถูกโหลดใน worker"           '[ "$(docker exec rakazo-worker-1 grep -c "\"name\": \"skill-installer\"" /app/packages/adapters/src/builtin-skills.ts)" -ge 1 ]'
 chk "rakazo-lan-block active"                  '[ "$(systemctl is-active rakazo-lan-block)" = active ]'
 if systemctl cat maw-serve >/dev/null 2>&1; then

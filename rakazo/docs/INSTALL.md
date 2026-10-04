@@ -90,7 +90,7 @@ CRD_SKILLS_DIR=/mnt/c/Users/<ชื่อผู้ใช้>/.claude/skills bash
 ```
 ไม่ตั้ง `CRD_SKILLS_DIR` ก็ติดตั้งได้ (มีแค่ `skill-installer`) แล้วเพิ่ม skill ภายหลังด้วย `build-skills.sh --apply` (ดู OPERATIONS.md)
 
-สคริปต์ทำ: ตรวจ port → ดาวน์โหลด installer/compose ที่ pin ไว้ที่ v0.1.6 (`--prepare-only`) → pin image tag → ดึง hotfix + Dockerfile พร้อม **ตรวจ checksum** → สร้าง hotfix แนบไฟล์ Office จาก image `app:v0.1.6` (ตรวจ checksum ก่อน/หลัง patch) → build `crd/computer:v0.1.6-th` → build `crd/app:v0.1.6-office` (หน้าเว็บที่รับอัปโหลด Office + อวตารหมวกนิรภัย 3 มิติ + ชื่อ/ไอคอน crd-bot, ~1 นาที) → `build-skills.sh`: build `crd/computer:v0.1.6-crd` (Python libs + skill ที่ `/opt/crd-skills`) และสร้าง built-in skills → ใส่ override → เพิ่มคำสั่ง `dc` → `dc up -d --wait`
+สคริปต์ทำ: ตรวจ port → ดาวน์โหลด installer/compose ที่ pin ไว้ที่ v0.1.6 (`--prepare-only`) → pin image tag → ดึง hotfix + Dockerfile พร้อม **ตรวจ checksum** → สร้าง hotfix แนบไฟล์ Office จาก image `app:v0.1.6` (ตรวจ checksum ก่อน/หลัง patch) → สร้าง hotfix ข้อความ crd-bot ฝั่งเซิร์ฟเวอร์ (ตรวจ checksum ต้นฉบับ) → build `crd/computer:v0.1.6-th` → build `crd/app:v0.1.6-office` (หน้าเว็บที่รับอัปโหลด Office + อวตารหมวกนิรภัย 3 มิติ + ชื่อ/ไอคอน crd-bot, ~1 นาที) → `build-skills.sh`: build `crd/computer:v0.1.6-crd` (Python libs + skill ที่ `/opt/crd-skills`) และสร้าง built-in skills → ใส่ override → เพิ่มคำสั่ง `dc` → `dc up -d --wait`
 
 **ผ่านเมื่อ:** ทุกบรรทัดเป็น `[PASS]` และจบด้วย "Rakazo ทำงาน" — ถ้า checksum `FAILED` ให้หยุด (ไฟล์ต้นทางถูกเปลี่ยน)
 
