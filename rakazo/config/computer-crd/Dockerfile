@@ -1,5 +1,6 @@
 # CRD: bot computer = crd/computer:v0.1.6-th (Thai fonts) + Python libraries used by CRD skills
-# + skill folders at /opt/crd-skills (read-only). Built by scripts/wsl/build-skills.sh;
+# + skill folders at /opt/crd-skills (read-only) + Google Drive helpers gdls2/gdtree/gdread
+# at /usr/local/bin (bin/, see DECISIONS D22). Built by scripts/wsl/build-skills.sh;
 # build context = ~/rakazo/computer-crd (skills/ is staged there, not stored in the repo).
 # Python versions pinned to what was tested on the pilot machine (2026-10-04).
 FROM crd/computer:v0.1.6-th
@@ -13,4 +14,6 @@ RUN apt-get update \
  && python3 -c "import openpyxl, docx, pythainlp, rapidfuzz, matplotlib, fitz, ezdxf, shapely; print('crd python libs ok')"
 COPY skills/ /opt/crd-skills/
 RUN chmod -R a+rX,go-w /opt/crd-skills
+COPY bin/gdls2 bin/gdtree bin/gdread /usr/local/bin/
+RUN chmod 755 /usr/local/bin/gdls2 /usr/local/bin/gdtree /usr/local/bin/gdread
 USER 1000:1000
