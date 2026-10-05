@@ -24,6 +24,7 @@ chk "ชื่อหน้าต่างแอป = crd-bot"                  '
 chk "ข้อความในหน้าเว็บเป็น crd-bot"              'docker exec rakazo-web-1 grep -rq "Sign in to crd-bot" /app/apps/web/dist/assets && ! docker exec rakazo-web-1 grep -rq "Sign in to Rakazo" /app/apps/web/dist/assets'
 chk "supervisor ใช้ image เครื่องบอท CRD"       "[ \"\$(docker exec rakazo-supervisor-1 printenv RAKAZO_COMPUTER_IMAGE)\" = '${COMPUTER_CRD_IMAGE}' ]"
 chk "image เครื่องบอทมี Python libs + skill"     "docker run --rm --entrypoint sh '${COMPUTER_CRD_IMAGE}' -c 'python3 -c \"import openpyxl, docx, pythainlp\" && test -f /opt/crd-skills/skill-installer/SKILL.md'"
+chk "image เครื่องบอทมีคำสั่ง Drive (gdtree/gdread)" "docker run --rm --entrypoint sh '${COMPUTER_CRD_IMAGE}' -c 'command -v gdls2 && command -v gdtree && command -v gdread' >/dev/null"
 chk "บอทแนะนำตัวเป็น crd-bot (worker)"          'docker exec rakazo-worker-1 grep -q "You are a crd-bot bot" /app/packages/adapters/src/pi-runtime.ts'
 chk "builtin skill ถูกโหลดใน worker"           '[ "$(docker exec rakazo-worker-1 grep -c "\"name\": \"skill-installer\"" /app/packages/adapters/src/builtin-skills.ts)" -ge 1 ]'
 chk "rakazo-lan-block active"                  '[ "$(systemctl is-active rakazo-lan-block)" = active ]'

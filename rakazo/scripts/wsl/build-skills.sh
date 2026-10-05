@@ -48,6 +48,7 @@ python3 "$REPO_ROOT/scripts/wsl/builtin-skills-patch.py" "$ctx/skills" hotfix/bu
 
 # Bot computer image with Python libs + skill folders
 cp "$REPO_ROOT/config/computer-crd/Dockerfile" "$ctx/"
+cp -r "$REPO_ROOT/config/computer-crd/bin" "$ctx/"
 docker build -q -t "$COMPUTER_CRD_IMAGE" "$ctx" >/dev/null
 ok "build $COMPUTER_CRD_IMAGE"
 
