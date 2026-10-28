@@ -1,0 +1,7 @@
+crd-bot team trial package
+Based on Rakazo v0.1.6 (https://github.com/elie222/rakazo), Apache-2.0.
+See LICENSE.upstream. Modified sources include UI avatars/branding, Office attachments,
+signup provisioning and the web adapter. Original copyright notices are retained.
+Web adapter fixes derive from jaturapornchai/mybotdemo01 commit b539632eba4ef28c14cf0e2c0b2ec6c8ee122787.
+This source package excludes personal credentials, database data, Memory Hub vaults,
+Google Drive project indexes, and private CRD skills. Each tester connects their own model.

@@ -1,0 +1,19 @@
+CRD-BOT TEAM PACKAGE VALIDATION — 2026-10-29
+Environment: isolated Docker Compose project on the existing Ubuntu-24.04 WSL host.
+Not a second physical Windows machine. User will perform that acceptance test.
+PASS Windows wrapper mocked tests: argument forwarding, custom ports, cat icon and browser launch.
+PASS source build: clean upstream v0.1.6 base plus allow-listed source changes.
+PASS isolated installation: fresh Postgres and app volumes, web 5273/API 3200.
+PASS HTTP signup: new synthetic account automatically receives neo and swift.
+PASS correct cross-bot IDs, dedicated computers and threads.
+PASS idempotent team provisioning; preserves user instruction edits.
+PASS two accounts have separate bot IDs/instructions.
+PASS article-link resolution and publication/modified date distinction fixture.
+PASS upstream web adapter regression tests: 8/8.
+PASS robot-cat rendering by portable bot name: 2/2 (16, 26 and 64px).
+PASS web title and favicon present; no model credentials copied.
+PENDING clean Windows prerequisite installation, Desktop shortcut interaction.
+PENDING per-user model authentication, live model chat and neo-to-swift news run.
+PENDING UI automatic response rendering acceptance on tester's machine.
+Scope: neo/swift + cat branding + Office upload + web evidence + Thai fonts.
+Private CRD skills, Drive project indexes and Memory Hub vault are not distributed.
