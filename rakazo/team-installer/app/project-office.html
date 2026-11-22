@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="th">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRD 3D</title>
+<style>
+:root{color-scheme:light;--page:#f4f6f7;--surface:#fff;--ink:#203139;--muted:#4f606a;--line:#ccd6d8;--wash:#e4eef0;--tint:#c2d9dd;--accent:#145b61;--active:#d9eee6}
+:root[data-theme=dark]{color-scheme:dark;--page:#172129;--surface:#222f38;--ink:#eef4f6;--muted:#c0cdd1;--line:#42545e;--wash:#314853;--tint:#192e37;--accent:#93dfce;--active:#304b46}
+:root[data-theme=earth]{--page:#f5f0e6;--surface:#fffbf3;--ink:#34382c;--muted:#615f50;--line:#cfc5b5;--wash:#e8e9da;--tint:#cad5bc;--accent:#3d6050;--active:#e5ebdc}
+*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font:16px/1.5 "Inter", "Segoe UI", "Leelawadee UI", Tahoma, sans-serif}
+main{max-width:1440px;margin:auto;padding:clamp(12px,2vw,26px)}header,.tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px}header{justify-content:space-between;margin-bottom:14px}
+h1,h2,p{margin:0}h1{font-size:clamp(23px,3vw,36px);letter-spacing:-.035em}h2{font-size:17px}
+button,select{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;border-radius:9px;padding:6px 10px;min-height:44px;min-width:44px;cursor:pointer}
+button:hover{background:var(--active)}:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(205px,26%);gap:14px;align-items:start}.stage,aside{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+canvas{display:block;width:100%;height:clamp(290px,58vh,660px);background:radial-gradient(ellipse at 48% 35%,var(--wash),var(--tint));touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
+.tools{padding:10px;border-top:1px solid var(--line)}.tools button{font-size:14px}aside{padding:14px}#count{color:var(--muted);font-size:14px;margin-left:6px}
+#roster{display:grid;margin-top:10px;gap:6px}#roster button{display:grid;text-align:start;padding:8px 12px;line-height:1.3;border-left:4px solid var(--mark);border-radius:6px}#roster small{color:var(--muted);font-size:13px}.status{font-size:12px;color:var(--accent);margin-top:3px}
+#roster button:has(img){grid-template-columns:40px 1fr;column-gap:9px}#roster img{grid-column:1;grid-row:1/4;align-self:center;width:40px;height:40px;border-radius:50%}
+#mode,#detail{color:var(--muted);font-size:14px;overflow-wrap:anywhere;margin-top:8px}
+@media(max-width:720px){.layout{grid-template-columns:minmax(0,1fr)}#roster{grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr))}canvas{height:42vh}.tools{gap:4px}}
+</style>
+<main><header><h1>3D</h1><label>ธีม <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="earth">Earth</option></select></label></header>
+<div class="layout"><section class="stage" aria-label="มุมมอง 3D"><canvas id="view" aria-label="โต๊ะและสถานะบอตใน 3D ลากเพื่อหมุน หรือใช้ปุ่มมุมกล้อง"></canvas>
+<nav class="tools" aria-label="มุมกล้อง"><button id="home">มุม 3D</button><button id="plan">มุมสูง</button><button id="left" aria-label="หมุนซ้าย">↶</button><button id="right" aria-label="หมุนขวา">↷</button><button id="plus" aria-label="ซูมเข้า">＋</button><button id="minus" aria-label="ซูมออก">−</button></nav></section>
+<aside><h2>ทีมโครงการ <span id="count"></span></h2><details id="manage" hidden><summary>จัดการบอต</summary><button id="addBot">เพิ่มบอต</button><label>เลือกบอต <select id="removeTarget"></select></label> <button id="removeBot">ลบบอต…</button></details><div id="roster" aria-label="เปิดแชตบอต"></div></aside></div><p id="mode"></p><p id="detail" aria-live="polite"></p></main>
+<script>
+'use strict';
+const canvas=document.querySelector('#view'), ctx=canvas.getContext('2d');
+const roster=document.querySelector('#roster'), detail=document.querySelector('#detail');
+const embedded=parent!==window, motion=matchMedia('(prefers-reduced-motion: reduce)');
+const labels={running:'กำลังทำงาน',queued:'รอคิว',leased:'กำลังเตรียมงาน',waiting_input:'รอคำตอบ',waiting_takeover:'รอผู้ใช้ควบคุม',idle:'ว่าง',completed:'เสร็จแล้ว',failed:'งานล้มเหลว',interrupted:'งานหยุด',cancelled:'ยกเลิกแล้ว',waiting:'กำลังรอ'};
+function statusLabel(status){return Object.hasOwn(labels,status)?labels[status]:'รอสถานะ'}
+const colors={"neo": "#F2622A", "swift": "#2E9E6A", "civil": "#447fa9", "arch": "#b57996", "mep": "#478f93", "scout": "#967946", "qs": "#8c6aab"};
+const steel='#334e50', oak='#c99765', mint='#539a88', white='#fbf4df';
+const portraits=new Map();
+let bots=[], staticFaces=[], movingFaces=[], anchors=[], hits=[], owner=null, frame=0;
+let previousPaint=-100;
+let yaw=.60, pitch=.52, zoom=1, span=10, cols=2, rows=1, drag=null;
+function face(vertices,color){staticFaces.push({vertices,color,owner});}
+function box(x,y,z,w,h,d,color){
+ const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,t=y+h;
+ const points=[[a,y,c],[b,y,c],[b,y,e],[a,y,e],[a,t,c],[b,t,c],[b,t,e],[a,t,e]];
+ // Tile wide surfaces so objects close to the wall and floor occlude only their own tiles.
+ for(const [a,b,,d] of [[4,7,6,5],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0],[0,1,2,3]]){
+  const origin=points[a],u=points[b].map((v,i)=>v-origin[i]),v=points[d].map((n,i)=>n-origin[i]);
+  const nu=Math.ceil(Math.hypot(...u)/.64),nv=Math.ceil(Math.hypot(...v)/.64);
+  const point=(i,j)=>origin.map((n,k)=>n+u[k]*i/nu+v[k]*j/nv);
+  for(let i=0;i<nu;i++)for(let j=0;j<nv;j++)face([point(i,j),point(i+1,j),point(i+1,j+1),point(i,j+1)],color);
+ }
+}
+function oval(x,y,z,w,h,d,color){
+ const rings=[];
+ for(let j=0;j<=6;j++){
+  const lat=Math.PI*(j/6-.5);
+  rings.push(Array.from({length:12},(_,i)=>{const a=i*Math.PI/6;return [x+w*Math.cos(lat)*Math.cos(a),y+h*Math.sin(lat),z+d*Math.cos(lat)*Math.sin(a)]}));
+ }
+ for(let j=0;j<6;j++)for(let i=0;i<12;i++){const k=(i+1)%12;face([rings[j][i],rings[j+1][i],rings[j+1][k],rings[j][k]],color)}
+}
+function plant(x,z){
+ box(x,0,z,.65,.55,.65,'#b87953');
+ for(let i=0;i<7;i++){const a=i*2.4;oval(x+.22*Math.cos(a),.85+i%3*.19,z+.22*Math.sin(a),.17,.42,.18,i%2?mint:'#437662')}
+}
+function station(bot,x,z){
+ owner=bot.id;
+ const color=colors[bot.name] || '#7899bf';
+ box(x,.015,z,3.25,.04,2.65,'#a9bcb0');
+ for(const dx of [-1.1,1.1])for(const dz of [-.4,.4])box(x+dx,.05,z+dz,.11,.93,.11,steel);
+ box(x,.97,z,2.6,.14,1.08,oak);
+ box(x-.65,1.11,z+.17,.48,.06,.24,steel);box(x-.65,1.16,z+.17,.12,.25,.10,steel);
+ box(x-.65,1.37,z+.17,1.15,.68,.09,steel);box(x-.65,1.43,z+.115,1.03,.54,.025,bot.status==='running'?'#83d9bf':'#91aab1');
+ box(x,1.11,z-.27,.88,.05,.25,'#485d63');
+ box(x,.05,z-.96,.58,.1,.55,steel);box(x,.15,z-.96,.1,.46,.1,steel);
+ box(x,.59,z-.96,.76,.15,.63,'#566e65');box(x,.72,z-1.25,.76,.54,.13,'#566e65');
+ const first=staticFaces.length;
+ oval(x,1.02,z-.9,.34,.46,.28,color);oval(x,1.68,z-.9,.43,.37,.34,white);
+ box(x,1.59,z-.58,.49,.18,.05,steel);
+ for(const dx of [-.13,.13])box(x+dx,1.65,z-.549,.055,.055,.02,'#96efcc');
+ if(bot.name==='neo'){oval(x,1.96,z-.9,.44,.18,.35,color);box(x,1.91,z-.84,.93,.07,.77,color)}
+ else{for(const dx of [-.41,.41])oval(x+dx,1.69,z-.9,.09,.16,.13,color)}
+ for(const dx of [-.29,.29])oval(x+dx,1.17,z-.59,.11,.12,.23,color);
+ if(bot.status==='running') movingFaces.push(...staticFaces.splice(first));
+ anchors.push({id:bot.id,name:bot.name,status:bot.status,x,y:2.52,z:z-.9});
+ owner=null;
+}
+function build(){
+ staticFaces=[];movingFaces=[];anchors=[];owner=null;
+ cols=Math.max(2,Math.ceil(Math.sqrt(bots.length)));rows=Math.max(1,Math.ceil(bots.length/cols));
+ const width=cols*3.8+2.4,depth=rows*3.1+2.9;
+ span=Math.hypot(width,depth);
+ box(0,-.36,0,width,.36,depth,'#c3af92');
+ for(let i=0;i<cols*2;i++)box(-width/2+(i+.5)*width/(cols*2),0,0,width/(cols*2)-.015,.025,depth,i%2?'#e4d3b5':'#ecdabc');
+ // A glazed rear wall, plan board and planting frame the open cutaway.
+ box(0,0,-depth/2,width,2.9,.14,'#b9c9bd');
+ for(let i=0;i<cols;i++){
+  const x=-width/2+(i+.5)*width/cols;
+  box(x,.82,-depth/2+.10,width/cols-.3,1.84,.08,'#688989');
+  box(x,.93,-depth/2+.16,width/cols-.52,1.61,.05,'#badbe0');
+  box(x,.92,-depth/2+.20,.07,1.65,.07,white);
+  box(x,1.61,-depth/2+.21,width/cols-.48,.055,.07,white);
+ }
+ plant(width/2-.56,-depth/2+.66);plant(-width/2+.5,depth/2-.57);
+ bots.forEach((b,i)=>station(b,(i%cols-(cols-1)/2)*3.8,(Math.floor(i/cols)-(rows-1)/2)*3.1+.35));
+}
+function tint(hex,light){
+ if(picker.value==="dark")light*=.78;
+ const n=parseInt(hex.slice(1),16);
+ return 'rgb('+[n>>16,(n>>8)&255,n&255].map(v=>Math.min(255,Math.round(v*light))).join(',')+')';
+}
+function draw(time){
+ frame=0;
+ if(movingFaces.length&&!motion.matches&&time-previousPaint<45){refresh();return}
+ previousPaint=time;
+ const w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);
+ if(!w||!h)return;
+ if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ const sy=Math.sin(yaw),cy=Math.cos(yaw),sp=Math.sin(pitch),cp=Math.cos(pitch);
+ const scale=Math.min(w*.89/span,h*.82/(span*.65+1))*zoom, camera=span*2.7;
+ function project([x,y,z],lift=0){
+  y+=lift-.9;
+  const forward=x*sy+z*cy, depth=forward*cp+y*sp, factor=scale*camera/(camera-depth);
+  return [w/2+(x*cy-z*sy)*factor,h*.52-(y*cp-forward*sp)*factor,depth];
+ }
+ const items=[];
+ function enqueue(f,lift){
+  const points=f.vertices.map(v=>project(v,lift));
+  const [a,b,c]=points;
+  if((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])>=0)return;
+  const [p,q,r]=f.vertices;
+  const u=q.map((v,i)=>v-p[i]),v=r.map((n,i)=>n-p[i]);
+  const nx=u[1]*v[2]-u[2]*v[1],ny=u[2]*v[0]-u[0]*v[2],nz=u[0]*v[1]-u[1]*v[0];
+  const light=.79+.25*(-nx*.45+ny*.85+nz*.25)/(Math.hypot(nx,ny,nz)||1);
+  items.push({points,depth:points.reduce((s,p)=>s+p[2],0)/points.length,fill:tint(f.color,light),id:f.owner});
+ }
+ for(const f of staticFaces)enqueue(f,0);
+ const lift=motion.matches?0:.045*Math.sin(time*.005);
+ for(const f of movingFaces)enqueue(f,lift);
+ items.sort((a,b)=>a.depth-b.depth);hits=[];
+ for(const item of items){
+  const path=new Path2D();item.points.forEach(([x,y],i)=>i?path.lineTo(x,y):path.moveTo(x,y));path.closePath();
+  ctx.fillStyle=item.fill;ctx.fill(path);ctx.strokeStyle=item.fill;ctx.lineWidth=.45;ctx.stroke(path);
+  hits.push({path,id:item.id});
+ }
+ for(const a of anchors){
+  const [x,y]=project([a.x,a.y,a.z]);ctx.font='600 13px '+getComputedStyle(document.body).fontFamily;
+  const portrait=portraits.get(a.id), ready=portrait?.complete && portrait.naturalWidth>0;
+  const inset=ready?22:0, label=statusLabel(a.status);
+  const width=Math.min(140,Math.max(ctx.measureText(a.name).width,ctx.measureText(label).width))+16+inset;
+  const path=new Path2D();path.roundRect(x-width/2,y-29,width,39,7);
+  ctx.fillStyle=a.status==='running'?'#086449':'#293e4a';ctx.fill(path);
+  if(ready){ctx.save();ctx.beginPath();ctx.arc(x-width/2+12,y-10,9.5,0,Math.PI*2);ctx.clip();ctx.drawImage(portrait,x-width/2+2.5,y-19.5,19,19);ctx.restore()}
+  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(a.name,x+inset/2,y-13,140);
+  ctx.font='12px '+getComputedStyle(document.body).fontFamily;ctx.fillText(label,x+inset/2,y+4,140);
+  hits.push({path,id:a.id});
+ }
+ if(movingFaces.length&&!motion.matches&&!document.hidden)frame=requestAnimationFrame(draw);
+}
+function refresh(){if(!frame)frame=requestAnimationFrame(draw)}
+function openBot(id){
+ if(embedded)parent.postMessage({type:'crd-open-bot',id},location.origin);
+ else detail.textContent='โต๊ะ '+bots.find(b=>b.id===id).name+' · ในระบบจริงจะเปิดแชตของบอตนี้ครับ';
+}
+function update(list){
+ if(embedded){
+  const select=document.querySelector('#removeTarget'), old=select.value;
+  select.replaceChildren(new Option('เลือกบอต',''),...list.map(b=>new Option(b.name,b.id)));
+  select.value=list.some(b=>b.id===old)?old:'';
+  document.querySelector('#manage').hidden=false;
+  document.querySelector('#addBot').onclick=()=>parent.postMessage({type:'crd-create-bot'},location.origin);
+  document.querySelector('#removeBot').onclick=()=>{if(select.value)parent.postMessage({type:'crd-delete-bot',id:select.value},location.origin)};
+ }
+ document.querySelector("#count").textContent=list.length+' ตัว · กำลังทำงาน '+list.filter(b=>b.status==='running').length+' ตัว';
+ const focused=roster.contains(document.activeElement)?document.activeElement.dataset.botId:null;
+ bots=list;build();roster.replaceChildren();
+ const ids=new Set(bots.map(b=>b.id));for(const id of portraits.keys())if(!ids.has(id))portraits.delete(id);
+ for(const b of bots){
+  const el=document.createElement('button');
+  el.dataset.botId=b.id;
+  const url=b.portrait || (Object.hasOwn(colors,b.name)?'/crd-avatars/'+b.name+'.png':'');
+  if(url){
+   let img=portraits.get(b.id);
+   if(!img || img.getAttribute('src')!==url){img=new Image();img.alt='';img.onload=refresh;img.src=url;portraits.set(b.id,img)}
+   el.append(img);
+  }
+  el.style.setProperty('--mark',colors[b.name] || mint);
+  for(const [tag,value] of [['strong',b.name],['small',b.title],['span',statusLabel(b.status)]]){
+   const line=document.createElement(tag);line.textContent=value;if(tag==='span')line.className='status';el.append(line);
+  }
+  el.title=b.preview || b.title;el.onclick=()=>openBot(b.id);roster.append(el);
+  if(focused===b.id)el.focus({preventScroll:true});
+ }
+ if(!bots.length)roster.textContent='ยังไม่มีบอตใน workspace นี้ครับ';
+ refresh();
+}
+function magnify(f){zoom=Math.max(.55,Math.min(2.8,zoom*f));refresh()}
+canvas.onwheel=e=>{e.preventDefault();magnify(Math.exp(-Math.sign(e.deltaY)*.09))};
+canvas.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,yaw,pitch,moved:false};canvas.setPointerCapture(e.pointerId)};
+canvas.onpointermove=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>4)drag.moved=true;
+ if(drag.moved){yaw=drag.yaw-dx*.009;pitch=Math.max(.18,Math.min(1.45,drag.pitch+dy*.007));refresh()}};
+canvas.onpointercancel=()=>{drag=null};
+canvas.onpointerup=e=>{if(drag&&!drag.moved){
+ const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;
+ const hit=hits.slice().reverse().find(item=>ctx.isPointInPath(item.path,x,y));if(hit?.id)openBot(hit.id);
+ }drag=null};
+document.querySelector('#home').onclick=()=>{yaw=.60;pitch=.52;zoom=1;refresh()};
+document.querySelector('#plan').onclick=()=>{yaw=0;pitch=1.35;zoom=1;refresh()};
+document.querySelector('#left').onclick=()=>{yaw-=.35;refresh()};
+document.querySelector('#right').onclick=()=>{yaw+=.35;refresh()};
+document.querySelector('#plus').onclick=()=>magnify(1.18);
+document.querySelector('#minus').onclick=()=>magnify(1/1.18);
+new ResizeObserver(refresh).observe(canvas);document.addEventListener('visibilitychange',refresh);
+const mode=document.querySelector('#mode');
+const picker=document.querySelector('#theme');
+function applyTheme(value){const selected=['light','dark','earth'].includes(value)?value:'light';document.documentElement.dataset.theme=selected;picker.value=selected;refresh()}
+try{applyTheme(localStorage.getItem('crd-office-theme'))}catch{applyTheme('light')}
+picker.onchange=()=>{applyTheme(picker.value);try{localStorage.setItem('crd-office-theme',picker.value)}catch{}};
+if(embedded){
+ mode.textContent='กำลังรอข้อมูลจาก crd-bot ครับ';
+ let lastSnapshot;
+ window.addEventListener('message',e=>{if(e.source!==parent||e.origin!==location.origin||e.data?.type!=='crd-bots'||!Array.isArray(e.data.bots))return;
+ mode.textContent='ลากเพื่อหมุน · เลื่อนเพื่อซูม · เลือกโต๊ะเพื่อเปิดแชต';applyTheme(e.data.theme || picker.value);
+ const snapshot=JSON.stringify(e.data.bots);if(snapshot!==lastSnapshot){update(e.data.bots);lastSnapshot=snapshot}});
+ build();refresh();
+}else{
+ mode.textContent='ตัวอย่างข้อมูลจำลอง · ลากเพื่อหมุน · เลื่อนเพื่อซูม';
+ update([{"id": "neo", "name": "neo", "title": "Chief of Staff", "status": "idle"}, {"id": "swift", "name": "swift", "title": "Project Director (PD)", "status": "idle"}, {"id": "civil", "name": "civil", "title": "ที่ปรึกษาวิศวกรรมโยธาและโครงสร้าง", "status": "idle"}, {"id": "arch", "name": "arch", "title": "ที่ปรึกษาสถาปัตยกรรม", "status": "idle"}, {"id": "mep", "name": "mep", "title": "ที่ปรึกษาระบบประกอบอาคาร", "status": "idle"}, {"id": "scout", "name": "scout", "title": "ผู้ช่วยค้นหานวัตกรรมก่อสร้าง", "status": "idle"}, {"id": "qs", "name": "qs", "title": "Quantity Surveyor (QS)", "status": "idle"}]);
+}
+</script></html>

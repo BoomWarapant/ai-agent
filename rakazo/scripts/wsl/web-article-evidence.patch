@@ -1,0 +1,44 @@
+--- a/keyless-http-web.ts
++++ b/keyless-http-web.ts
+@@ -164,9 +164,38 @@
+ }
+ 
+ export function extractReadableText(html: string, url: string): { title: string; text: string } {
+-  const readable = extractWithReadability(html, url);
+-  if (readable) return readable;
+-  return stripHtmlFallback(html);
++  const result = extractWithReadability(html, url) ?? stripHtmlFallback(html);
++  const doc = new JSDOM(html, { url }).window.document;
++  const dates: string[] = [];
++  for (const meta of Array.from(doc.querySelectorAll('meta[property="article:published_time"], meta[name="date"], meta[itemprop="datePublished"]'))) {
++    const value = meta.getAttribute("content");
++    if (value) dates.push(`Publication metadata (verify against article): ${value}`);
++  }
++  for (const script of Array.from(doc.querySelectorAll('script[type="application/ld+json"]'))) {
++    try {
++      const visit = (item: any): void => {
++        if (!item || typeof item !== "object") return;
++        if (item.datePublished) dates.push(`JSON-LD datePublished: ${String(item.datePublished)}`);
++        if (item.dateModified) dates.push(`JSON-LD dateModified (not publication): ${String(item.dateModified)}`);
++        for (const value of Object.values(item)) if (typeof value === "object") visit(value);
++      };
++      visit(JSON.parse(script.textContent || "null"));
++    } catch { /* Ignore malformed metadata. */ }
++  }
++  const links: string[] = [];
++  const seen = new Set<string>();
++  for (const a of Array.from(doc.querySelectorAll("main a[href], article a[href]"))) {
++    try {
++      const href = new URL(a.getAttribute("href") || "", url);
++      const label = normalizeWhitespace(a.textContent || "");
++      if (!label || !["https:", "http:"].includes(href.protocol) || seen.has(href.href)) continue;
++      seen.add(href.href);
++      links.push(`${label.slice(0, 180)}: ${href.href}`);
++      if (links.length >= 35) break;
++    } catch { /* Ignore malformed links. */ }
++  }
++  return { title: result.title, text: [...new Set(dates)].slice(0, 12).join("\n") + "\nPage links (discovery only; open article to verify):\n" + links.join("\n") + "\nArticle text:\n" + result.text };
++
+ }
+ 
+ function extractWithReadability(html: string, url: string): { title: string; text: string } | null {

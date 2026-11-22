@@ -6,3 +6,10 @@
 *.md        text eol=lf
 # PowerShell files: CRLF
 *.ps1       text eol=crlf
+# Team package checksums use the same bytes in GitHub ZIP and Windows clones.
+/Install-crd-bot.ps1 text eol=lf
+/Start-crd-bot.ps1 text eol=lf
+/rakazo/team-installer/** text eol=lf
+/rakazo/team-installer/**/*.png -text
+/rakazo/team-installer/**/*.ico -text
+/crd-bot-package.SHA256SUMS text eol=lf

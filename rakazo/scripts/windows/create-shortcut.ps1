@@ -3,7 +3,21 @@
 # - Replaces an older Rakazo.lnk (Desktop / Startup) with crd-bot.lnk
 # - Refreshes the Startup shortcut if one already exists (or creates it with -Startup)
 # - Moves an old standalone %USERPROFILE%\rakazo-start.ps1 (from the pilot) to .bak — not deleted
-param([switch]$Startup)
+param([switch]$Startup,[switch]$IconOnly)
+$icon=(Resolve-Path (Join-Path $PSScriptRoot '..\..\team-installer\app\branding\favicon.ico')).Path
+if($IconOnly){
+  $desktop=[Environment]::GetFolderPath('Desktop')
+  $changed=0
+  foreach($link in Get-ChildItem -LiteralPath $desktop -Filter '*.lnk'){
+    if($link.BaseName -notin 'crd-bot','Rakazo','crd-bot-team'){continue}
+    $shortcut=(New-Object -ComObject WScript.Shell).CreateShortcut($link.FullName)
+    $shortcut.IconLocation="$icon,0"
+    $shortcut.Save()
+    $changed++
+  }
+  Write-Host "Updated $changed desktop shortcut(s)."
+  return
+}
 $script = Join-Path $PSScriptRoot 'rakazo-start.ps1'
 if (-not (Test-Path $script)) { Write-Host "ไม่พบ $script" -ForegroundColor Red; exit 1 }
 
