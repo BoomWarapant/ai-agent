@@ -1,18 +1,18 @@
 services:
   computer:
-    image: crd/team-computer:2026.10.29
+    image: crd/team-computer:1.0.2
     pull_policy: never
   supervisor:
-    image: crd/team-app:2026.10.29
+    image: crd/team-app:1.0.2
     pull_policy: never
     environment:
-      RAKAZO_COMPUTER_IMAGE: crd/team-computer:2026.10.29
+      RAKAZO_COMPUTER_IMAGE: crd/team-computer:1.0.2
   api:
-    image: crd/team-app:2026.10.29
+    image: crd/team-app:1.0.2
     pull_policy: never
   worker:
-    image: crd/team-app:2026.10.29
+    image: crd/team-app:1.0.2
     pull_policy: never
   web:
-    image: crd/team-app:2026.10.29
+    image: crd/team-app:1.0.2
     pull_policy: never

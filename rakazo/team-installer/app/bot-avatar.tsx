@@ -1,5 +1,6 @@
 import { ACTIVE_RUN_STATUSES, avatarIdentitySeed, organicAvatarPath } from "@rakazo/core";
-import { type CSSProperties, memo, useId, useSyncExternalStore } from "react";
+import { type CSSProperties, memo, useContext, useId, useSyncExternalStore } from "react";
+import { CrdPortraitContext, defaultCrdPortrait } from "./crd-portraits.js";
 import { type AvatarStyle, useAvatarStyle } from "./avatar-style.js";
 import { cn } from "./lib/utils.js";
 import "./styles.css";
@@ -24,6 +25,13 @@ export const BotAvatar = memo(function BotAvatar({
   const isWorking = ACTIVE_RUN_STATUSES.some((activeStatus) => activeStatus === status);
   const gradId = `spin-grad-${useId().replace(/[^a-zA-Z0-9-_]/g, "")}`;
   const preferredVariant = useAvatarStyle();
+  const assigned = useContext(CrdPortraitContext).get(identity ?? "");
+  const portrait = assigned ?? (identity ? defaultCrdPortrait(identity) : undefined);
+  if (portrait) {
+    return <img src={portrait} width={size} height={size} alt="" aria-hidden="true"
+      data-working={isWorking} className={cn("shrink-0 rounded-full object-cover", className)}
+      style={{ width:size, height:size, boxShadow:isWorking ? `0 0 0 2px ${color}` : undefined }} />;
+  }
   if ((variant ?? preferredVariant) === "organic") {
     return (
       <OrganicAvatar

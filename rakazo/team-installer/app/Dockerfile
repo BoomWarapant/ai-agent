@@ -10,13 +10,20 @@ USER root
 COPY hotfix/contracts-attachments.ts /app/packages/contracts/src/attachments.ts
 COPY hotfix/core-attachments.ts /app/packages/core/src/attachments.ts
 COPY bot-avatar.tsx /app/packages/ui-web/src/bot-avatar.tsx
+COPY crd-portraits.ts /app/packages/ui-web/src/
 COPY styles.css /app/packages/ui-web/src/styles.css
 COPY branding/ /app/apps/web/public/
 COPY hotfix/web-ssrf.ts hotfix/keyless-http-web.ts hotfix/undici-fetch.ts hotfix/remote-mcp.ts /app/packages/adapters/src/
 COPY crd-team.ts team-bots.json /app/packages/db/src/
+COPY ProjectOffice.tsx /app/apps/web/src/pages/ProjectOffice.tsx
+COPY crd-version.json /app/apps/web/src/pages/
+COPY CrdBotBrief.tsx CrdAvatarPicker.tsx RenameSpaceDialog.tsx /app/apps/web/src/pages/
+COPY crd-space-navigation.ts /app/apps/web/src/pages/
+COPY project-office.html /app/apps/web/public/project-office.html
 COPY prepare.mjs /tmp/crd-prepare.mjs
-RUN node /tmp/crd-prepare.mjs
-RUN sed -i 's#<title>Rakazo</title>#<title>crd-bot</title>#; s#content="Rakazo"#content="crd-bot"#; s#href="/favicon.ico"#href="/favicon.ico?v=neo-cat-20261029"#; s#href="/favicon.svg"#href="/favicon.svg?v=neo-cat-20261029"#; s#href="/apple-touch-icon.png"#href="/apple-touch-icon.png?v=neo-cat-20261029"#; s#href="/site.webmanifest"#href="/site.webmanifest?v=neo-cat-20261029"#' /app/apps/web/index.html \
+COPY patch-commands.mjs patch-space-api.mjs patch-space-ui.mjs /tmp/
+RUN node /tmp/crd-prepare.mjs && node /tmp/patch-commands.mjs && node /tmp/patch-space-api.mjs && node /tmp/patch-space-ui.mjs
+RUN sed -i 's#<title>Rakazo</title>#<title>crd-bot</title>#; s#content="Rakazo"#content="crd-bot"#; s#href="/favicon.ico"#href="/favicon.ico?v=crd-1.0.0"#; s#href="/favicon.svg"#href="/favicon.svg?v=crd-1.0.0"#; s#href="/apple-touch-icon.png"#href="/apple-touch-icon.png?v=crd-1.0.0"#; s#href="/site.webmanifest"#href="/site.webmanifest?v=crd-1.0.0"#' /app/apps/web/index.html \
  && sed -i 's#"name": "Rakazo"#"name": "crd-bot"#; s#"short_name": "Rakazo"#"short_name": "crd-bot"#' /app/apps/web/public/site.webmanifest \
  && grep -q '<title>crd-bot</title>' /app/apps/web/index.html \
  && grep -q '"short_name": "crd-bot"' /app/apps/web/public/site.webmanifest \

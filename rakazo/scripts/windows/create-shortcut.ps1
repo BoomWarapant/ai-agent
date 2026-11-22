@@ -2,7 +2,21 @@
 # - Replaces an existing Rakazo.lnk on the Desktop
 # - Refreshes Rakazo.lnk in the Startup folder if one already exists (or creates it with -Startup)
 # - Moves an old standalone %USERPROFILE%\rakazo-start.ps1 (from the pilot) to .bak — not deleted
-param([switch]$Startup)
+param([switch]$Startup,[switch]$IconOnly)
+$icon=(Resolve-Path (Join-Path $PSScriptRoot '..\..\team-installer\app\branding\favicon.ico')).Path
+if($IconOnly){
+  $desktop=[Environment]::GetFolderPath('Desktop')
+  $changed=0
+  foreach($link in Get-ChildItem -LiteralPath $desktop -Filter '*.lnk'){
+    if($link.BaseName -notin 'crd-bot','Rakazo','crd-bot-team'){continue}
+    $shortcut=(New-Object -ComObject WScript.Shell).CreateShortcut($link.FullName)
+    $shortcut.IconLocation="$icon,0"
+    $shortcut.Save()
+    $changed++
+  }
+  Write-Host "Updated $changed desktop shortcut(s)."
+  return
+}
 $script = Join-Path $PSScriptRoot 'rakazo-start.ps1'
 if (-not (Test-Path $script)) { Write-Host "ไม่พบ $script" -ForegroundColor Red; exit 1 }
 
@@ -10,8 +24,7 @@ function New-RakazoShortcut([string]$path) {
   $s = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
   $s.TargetPath = 'powershell.exe'
   $s.Arguments = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $script + '"'
-  $edge = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
-  if (Test-Path $edge) { $s.IconLocation = "$edge,0" }
+  $s.IconLocation = "$icon,0"
   $s.Save()
   $check = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
   if ($check.Arguments -like "*$script*") { Write-Host "[PASS] $path -> $script" -ForegroundColor Green }
