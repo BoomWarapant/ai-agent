@@ -35,10 +35,50 @@ curl -fsSL "${BOTTEAM_RAW}/computer-th/Dockerfile" -o computer-th/Dockerfile
 sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS" || fail "checksum ไม่ตรง — หยุด อย่าใช้ไฟล์เหล่านี้"
 ok "checksum ครบ 5 ไฟล์"
 
+# 4b) CRD hotfix: Office attachments (.xlsx/.docx/.pptx) — patched from the pinned app image (not redistributed)
+docker pull -q "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}" >/dev/null
+cid="$(docker create "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}")"
+docker cp "$cid:/app/packages/contracts/src/attachments.ts" hotfix/contracts-attachments.ts.orig
+docker cp "$cid:/app/packages/core/src/attachments.ts" hotfix/core-attachments.ts.orig
+docker rm "$cid" >/dev/null
+grep '\.orig$' "$REPO_ROOT/checksums/SHA256SUMS-office" | sha256sum -c - || fail "ไฟล์ต้นฉบับใน image ไม่ตรง v0.1.6 — หยุด"
+python3 "$REPO_ROOT/scripts/wsl/office-attachments-patch.py" hotfix
+sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS-office" || fail "checksum hotfix Office ไม่ตรง — หยุด"
+ok "hotfix แนบไฟล์ Office พร้อม"
+
+# 4c) CRD branding: "Rakazo" -> "crd-bot" in server text the user sees (model billing notes) and in the
+#     bot's self-description, so bots introduce themselves as crd-bot. All occurrences in these 3 files are
+#     user/bot-facing text (checked on v0.1.6); patched from the pinned app image, not redistributed.
+cid="$(docker create "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}")"
+for f in pi-models pi-oauth pi-runtime; do docker cp "$cid:/app/packages/adapters/src/$f.ts" "hotfix/$f.ts.orig"; done
+docker rm "$cid" >/dev/null
+sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS-branding" || fail "ไฟล์ต้นฉบับใน image ไม่ตรง v0.1.6 — หยุด"
+for f in pi-models pi-oauth pi-runtime; do sed -E 's/\bRakazo\b/crd-bot/g' "hotfix/$f.ts.orig" > "hotfix/$f.ts"; done
+! grep -qw Rakazo hotfix/pi-models.ts hotfix/pi-oauth.ts hotfix/pi-runtime.ts || fail "แทนคำ Rakazo ไม่ครบ"
+ok "hotfix ข้อความ crd-bot พร้อม"
+
 # 5) Thai-font bot computer image (pull base first so FROM resolves offline-safe)
 docker pull "ghcr.io/elie222/rakazo/computer:${RAKAZO_TAG}" >/dev/null
 docker build -q -t "$COMPUTER_TH_IMAGE" computer-th
 ok "build $COMPUTER_TH_IMAGE"
+
+# 5b) Web rebuilt with the Office-attachment hotfix (users can upload .xlsx/.docx/.pptx)
+#     and the 3D hard-hat robot avatar (patched from the pinned app image; not redistributed)
+rm -rf app-office && mkdir -p app-office
+cp "$REPO_ROOT/config/app-office/"{Dockerfile,robot-hardhat.tsx.part,hardhat.css.part} hotfix/contracts-attachments.ts hotfix/core-attachments.ts app-office/
+cp -r "$REPO_ROOT/config/app-office/branding" app-office/
+cid="$(docker create "ghcr.io/elie222/rakazo/app:${RAKAZO_TAG}")"
+docker cp "$cid:/app/packages/ui-web/src/bot-avatar.tsx" app-office/bot-avatar.tsx.orig
+docker cp "$cid:/app/packages/ui-web/src/styles.css" app-office/styles.css.orig
+docker rm "$cid" >/dev/null
+(cd app-office && sha256sum -c "$REPO_ROOT/checksums/SHA256SUMS-avatar") || fail "bot-avatar.tsx/styles.css ใน image ไม่ตรง v0.1.6 — หยุด"
+python3 "$REPO_ROOT/scripts/wsl/avatar-patch.py" app-office
+docker build -q -t "$WEB_OFFICE_IMAGE" app-office
+ok "build $WEB_OFFICE_IMAGE"
+
+# 5c) Skills: bot computer image with Python libs + skill folders, and built-in skills hotfix.
+#     Set CRD_SKILLS_DIR (e.g. /mnt/c/Users/<you>/.claude/skills) to include the CRD skills.
+bash "$REPO_ROOT/scripts/wsl/build-skills.sh"
 
 # 6) Override from this repo
 cp "$REPO_ROOT/config/docker-compose.override.yml" docker-compose.override.yml

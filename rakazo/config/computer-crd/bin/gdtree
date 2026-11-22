@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+import html, re, sys, urllib.request
+from concurrent.futures import ThreadPoolExecutor
+def ls(fid):
+    req = urllib.request.Request(f"https://drive.google.com/embeddedfolderview?id={fid}", headers={"User-Agent": "Mozilla/5.0"})
+    page = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "replace")
+    out = []
+    for block in page.split('class="flip-entry"')[1:]:
+        link = re.search(r'<a href="(https://drive\.google\.com/[^"]+)"', block)
+        name = re.search(r'flip-entry-title">([^<]+)<', block)
+        if not (link and name):
+            continue
+        link = html.unescape(link.group(1))
+        i = re.search(r"/(?:folders|d)/([A-Za-z0-9_-]+)", link)
+        mod = re.search(r'flip-entry-last-modified"><div>([^<]+)<', block)
+        out.append(("folder" if "/folders/" in link else "file", i.group(1) if i else "", mod.group(1) if mod else "-", html.unescape(name.group(1))))
+    return out
+args = sys.argv[1:]
+root, depth, words = args[0], 3, []
+if "--depth" in args: depth = int(args[args.index("--depth") + 1])
+if "--find" in args: words = [w.lower() for w in args[args.index("--find") + 1:] if not w.startswith("--")]
+level, frontier = 0, [(root, "")]
+with ThreadPoolExecutor(8) as pool:
+    while frontier and level < depth:
+        results = list(pool.map(lambda f: (f[1], ls(f[0])), frontier))
+        frontier = []
+        for parent, items in results:
+            for kind, fid, mod, name in items:
+                path = f"{parent}/{name}" if parent else name
+                if not words or all(w in path.lower() for w in words):
+                    print(f"{kind}\t{fid}\t{mod}\t{path}")
+                if kind == "folder":
+                    frontier.append((fid, path))
+        level += 1

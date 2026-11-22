@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+import html, re, sys, urllib.request
+def ls(fid):
+    req = urllib.request.Request(f"https://drive.google.com/embeddedfolderview?id={fid}", headers={"User-Agent": "Mozilla/5.0"})
+    page = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "replace")
+    for block in page.split('class="flip-entry"')[1:]:
+        link = re.search(r'<a href="(https://drive\.google\.com/[^"]+)"', block)
+        name = re.search(r'flip-entry-title">([^<]+)<', block)
+        if not (link and name):
+            continue
+        link = html.unescape(link.group(1))
+        i = re.search(r"/(?:folders|d)/([A-Za-z0-9_-]+)", link)
+        mod = re.search(r'flip-entry-last-modified"><div>([^<]+)<', block)
+        print(("folder" if "/folders/" in link else "file") + "\t" + (i.group(1) if i else "") + "\t" + (mod.group(1) if mod else "-") + "\t" + html.unescape(name.group(1)))
+ls(sys.argv[1])

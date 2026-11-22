@@ -1,0 +1,170 @@
+  // CRD: robot avatar redrawn as a 3D-shaded robot wearing a hard hat (civil-engineering style).
+  // Eyes and ring keep the upstream classes/animations; extra motion lives in styles.css (.rakazo-hh-*).
+  const uid = gradId.replace(/^spin-grad-/, "");
+  const seed = hashString(color || "#8B5CF6");
+  const eyeVariant = seed % 4;
+  const idleDuration = (4.2 + ((seed * 7) % 28) / 10).toFixed(2);
+  const idleDelay = (-(((seed * 13) % 45) / 10)).toFixed(2);
+  const idleEyeAnimation = {
+    "--rakazo-eye-animation-name": `rakazo-eyes-idle-${eyeVariant}`,
+    "--rakazo-eye-animation-duration": `${idleDuration}s`,
+    "--rakazo-eye-animation-easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "--rakazo-eye-animation-delay": `${idleDelay}s`,
+  } as CSSProperties;
+  const workingEyeAnimation = {
+    "--rakazo-eye-animation-name": "rakazo-eyes-working",
+    "--rakazo-eye-animation-duration": "1.4s",
+    "--rakazo-eye-animation-easing": "ease-in-out",
+    "--rakazo-eye-animation-delay": "0s",
+  } as CSSProperties;
+  const hat = hardHatPalette(color);
+  const ids = {
+    body: `hh-body-${uid}`,
+    visor: `hh-visor-${uid}`,
+    hat: `hh-hat-${uid}`,
+    lamp: `hh-lamp-${uid}`,
+  };
+
+  return (
+    <div
+      className={cn(
+        "rakazo-bot-avatar rakazo-hh group relative flex items-center justify-center select-none",
+        className,
+      )}
+      data-working={isWorking}
+      style={{ width: size, height: size, flex: "none" }}
+    >
+      <svg
+        className="rakazo-bot-avatar-ring absolute pointer-events-none"
+        style={{
+          inset: -4,
+          width: size + 8,
+          height: size + 8,
+          filter: `drop-shadow(0 0 6px ${color}) drop-shadow(0 0 10px #ffffff)`,
+        }}
+        viewBox="0 0 48 48"
+        fill="none"
+      >
+        <circle
+          cx="24"
+          cy="24"
+          r="22"
+          stroke={`url(#${gradId})`}
+          strokeWidth="3.2"
+          strokeLinecap="round"
+          strokeDasharray="45 80"
+        />
+        <circle cx="43" cy="24" r="2.8" fill="#ffffff" />
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+            <stop offset="60%" stopColor={color} stopOpacity="0.9" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <svg
+        className="rakazo-hh-body relative"
+        viewBox="0 0 64 64"
+        aria-hidden="true"
+        style={{
+          width: size,
+          height: size,
+          overflow: "visible",
+          filter: isWorking
+            ? `drop-shadow(0 0 ${Math.max(2, Math.round(size * 0.18))}px ${color})`
+            : `drop-shadow(0 ${Math.max(1, Math.round(size * 0.04))}px ${Math.max(1, Math.round(size * 0.06))}px rgba(0,0,0,0.35))`,
+        }}
+      >
+        <defs>
+          <radialGradient id={ids.body} cx="35%" cy="30%" r="75%">
+            <stop offset="0" stopColor={lightenColor(color, 30)} />
+            <stop offset="0.55" stopColor={color} />
+            <stop offset="1" stopColor={darkenColor(color, 35)} />
+          </radialGradient>
+          <linearGradient id={ids.visor} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#2A2A33" />
+            <stop offset="1" stopColor="#050507" />
+          </linearGradient>
+          <radialGradient id={ids.hat} cx="38%" cy="25%" r="85%">
+            <stop offset="0" stopColor="#FFFFFF" />
+            <stop offset="0.35" stopColor={hat.top} />
+            <stop offset="0.8" stopColor={hat.mid} />
+            <stop offset="1" stopColor={hat.dark} />
+          </radialGradient>
+          <radialGradient id={ids.lamp} cx="50%" cy="50%" r="50%">
+            <stop offset="0" stopColor="#FFFBE6" />
+            <stop offset="1" stopColor="#FFE38A" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <circle cx="32" cy="38" r="22" fill={`url(#${ids.body})`} />
+        <ellipse cx="24" cy="28" rx="7" ry="3.5" fill="#ffffff" opacity="0.28" />
+        <rect
+          className="rakazo-bot-avatar-visor"
+          x="15.5"
+          y="35"
+          width="33"
+          height="17"
+          rx="8.5"
+          fill={`url(#${ids.visor})`}
+          stroke="#ffffff"
+          strokeOpacity="0.18"
+        />
+        <rect x="19" y="36.5" width="20" height="2.2" rx="1.1" fill="#ffffff" opacity="0.12" />
+        {(["idle", "working"] as const).map((mode) => (
+          <g
+            key={mode}
+            className={`rakazo-bot-avatar-eyes rakazo-bot-avatar-eyes-${mode}`}
+            style={mode === "idle" ? idleEyeAnimation : workingEyeAnimation}
+            fill="#FFFFFF"
+          >
+            <rect x="23" y="39" width="5" height="9" rx="2.5" />
+            <rect x="36" y="39" width="5" height="9" rx="2.5" />
+          </g>
+        ))}
+        <ellipse cx="32" cy="27.5" rx="27" ry="4.6" fill="#000000" opacity="0.22" />
+        <ellipse cx="32" cy="26" rx="27" ry="4.4" fill={hat.mid} />
+        <ellipse cx="32" cy="25.2" rx="26" ry="3.4" fill={hat.top} />
+        <path d="M11 25 Q11 5 32 5 Q53 5 53 25 Z" fill={`url(#${ids.hat})`} />
+        <path d="M28.5 6 Q32 4.6 35.5 6 L35 25 L29 25 Z" fill={hat.mid} />
+        <path d="M29.6 6.2 L30 24.5" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" />
+        <path
+          d="M16 21 Q17 10 26 8"
+          stroke="#ffffff"
+          strokeOpacity="0.75"
+          strokeWidth="2"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <rect x="28" y="17" width="8" height="5" rx="2" fill="#3A3A40" />
+        <circle className="rakazo-hh-lamp" cx="32" cy="19.5" r="7" fill={`url(#${ids.lamp})`} />
+        <circle cx="32" cy="19.5" r="1.8" fill="#FFF6C9" />
+      </svg>
+    </div>
+  );
+});
+
+/** Hard-hat colours: warm bot colours get a white (engineer) hat, cool ones a yellow hat. */
+function hardHatPalette(color: string): { top: string; mid: string; dark: string } {
+  const clean = color.replace(/^#/, "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const num = parseInt(full, 16);
+  let warm = true;
+  if (full.length === 6 && !Number.isNaN(num)) {
+    const r = (num >> 16) / 255;
+    const g = ((num >> 8) & 0xff) / 255;
+    const b = (num & 0xff) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let hue = 0;
+    if (max !== min) {
+      if (max === r) hue = (60 * ((g - b) / (max - min)) + 360) % 360;
+      else if (max === g) hue = 60 * ((b - r) / (max - min)) + 120;
+      else hue = 60 * ((r - g) / (max - min)) + 240;
+    }
+    warm = hue < 60 || hue >= 300;
+  }
+  return warm
+    ? { top: "#FFFFFF", mid: "#E9E7E1", dark: "#A9A69C" }
+    : { top: "#FFD970", mid: "#F5B731", dark: "#A86F05" };
+}
